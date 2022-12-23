@@ -1,0 +1,24 @@
+server:
+  port: 9092
+
+spring:
+  mvc:
+    view:
+      prefix: classpath:/templates/
+      suffix: .html
+  redis:
+    host: localhost
+    database: 0
+  freemarker:
+    cache: false
+    charset: UTF-8
+    allow-request-override: false
+    check-template-location: true
+    #类型
+    content-type: text/html
+    expose-request-attributes: true
+    expose-session-attributes: true
+    #文件后缀
+    suffix: .ftl
+    #路径
+    template-loader-path: classpath:/templates/
