@@ -1,0 +1,55 @@
+spring:
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/spring-security-learning?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false
+    username: root
+    password: root
+
+  redis:
+    host: redis-host
+    port: 6379
+    database: 1
+
+feign:
+  okhttp:
+    enabled: false
+
+gelald:
+  oauth:
+    client:
+      type: jdbc
+      properties-clients:
+        - clientId: 1
+          clientSecret: 2
+          authorized-grant-types:
+            - password
+            - image
+          scopes:
+            - write
+            - read
+          access-token-validity-seconds: 3600
+          refresh-token-validity-seconds: 7200
+        - clientId: 2
+          clientSecret: 3
+          authorized-grant-types:
+            - password
+            - image
+          scopes:
+            - write
+            - read
+          access-token-validity-seconds: 3600
+          refresh-token-validity-seconds: 7200
+    token:
+      #signKey:对称的密钥
+      #keyPair:密钥对
+      key-type: keyPair
+      #用于加密的对称密钥
+      sign-key: gelald
+      #密钥对存储的文件
+      resource: key.jks
+      alias: gelald
+      #文件访问密码
+      password: gelald@123
+      #密钥存储方式jdbc、redis、jwt
+      store-type: redis

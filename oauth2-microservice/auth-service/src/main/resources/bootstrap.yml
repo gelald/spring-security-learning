@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: oauth2-auth-service
+  cloud:
+    nacos:
+      username: nacos
+      password: nacos
+      server-addr: ${nacos.host}
+      discovery:
+        group: ${nacos.group}
+        register-enabled: true
+      config:
+        namespace: ${nacos.namespace}
+        group: ${nacos.group}
+        file-extension: yaml
+        enabled: false
+
+nacos:
+  host: nacos-host
+  namespace: f3d33d4c-3a18-4974-8e38-26dd3150295a
+  group: oauth2-learning

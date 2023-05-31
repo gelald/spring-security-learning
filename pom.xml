@@ -10,6 +10,8 @@
     <packaging>pom</packaging>
     <modules>
         <module>cas-learning</module>
+        <module>oauth2-single</module>
+        <module>oauth2-microservice</module>
     </modules>
 
     <properties>
