@@ -19,13 +19,13 @@
     </modules>
 
     <properties>
-        <maven.compiler.source>8</maven.compiler.source>
-        <maven.compiler.target>8</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <spring-boot.version>2.3.2.RELEASE</spring-boot.version>
-        <spring-cloud.version>Hoxton.SR8</spring-cloud.version>
-        <spring-cloud-alibaba.version>2.2.3.RELEASE</spring-cloud-alibaba.version>
-        <spring-security-jwt.version>1.0.9.RELEASE</spring-security-jwt.version>
+        <spring-boot.version>3.1.0</spring-boot.version>
+        <spring-cloud.version>2022.0.3</spring-cloud.version>
+        <spring-cloud-alibaba.version>2022.0.0.0-RC2</spring-cloud-alibaba.version>
+        <spring-security-jwt.version>1.1.1</spring-security-jwt.version>
         <jose-jwt.version>8.16</jose-jwt.version>
         <hutool.version>5.8.15</hutool.version>
     </properties>

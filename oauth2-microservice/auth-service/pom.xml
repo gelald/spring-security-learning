@@ -12,8 +12,8 @@
     <artifactId>auth-service</artifactId>
 
     <properties>
-        <maven.compiler.source>8</maven.compiler.source>
-        <maven.compiler.target>8</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -39,9 +39,10 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
+        <!-- Spring Cloud OAuth2已废弃，使用Spring Security的OAuth2相关组件 -->
         <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-oauth2</artifactId>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-oauth2-authorization-server</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.cloud</groupId>
@@ -51,14 +52,14 @@
             <groupId>io.github.openfeign</groupId>
             <artifactId>feign-okhttp</artifactId>
         </dependency>
+        <!-- Spring Security OAuth2 和 JWT 相关依赖在 Spring Boot 3 中有重大变化 -->
         <dependency>
-            <groupId>org.springframework.security.oauth</groupId>
-            <artifactId>spring-security-oauth2</artifactId>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-oauth2-resource-server</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-jwt</artifactId>
-            <version>${spring-security-jwt.version}</version>
+            <artifactId>spring-security-oauth2-jose</artifactId>
         </dependency>
         <dependency>
             <groupId>com.nimbusds</groupId>
@@ -86,8 +87,8 @@
             <artifactId>spring-boot-starter-jdbc</artifactId>
         </dependency>
         <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
