@@ -12,6 +12,7 @@
         <module>cas-learning</module>
         <module>oauth2-single</module>
         <module>oauth2-microservice</module>
+        <module>tiny-ss</module>
     </modules>
 
     <properties>
