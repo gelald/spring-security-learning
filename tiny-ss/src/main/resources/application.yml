@@ -16,6 +16,13 @@ spring:
   thymeleaf:
     cache: false
 
+logging:
+  level:
+    org:
+      springframework:
+        security:
+          authentication: debug
+
 server:
   port: 19501
   error:
