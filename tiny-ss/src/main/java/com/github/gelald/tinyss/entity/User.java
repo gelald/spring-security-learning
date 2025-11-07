@@ -1,17 +1,22 @@
 package com.github.gelald.tinyss.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "users")
-@Data
+@Getter
+@Setter
+@ToString(exclude = {"userRoles"})
 public class User implements UserDetails {
 
     @Id
@@ -33,8 +38,12 @@ public class User implements UserDetails {
     @Column(name = "last_name")
     private String lastName;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<UserRole> userRoles = new java.util.HashSet<>();
+
+    // 保留原有的简单角色字段用于向后兼容
     @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
+    @CollectionTable(name = "user_simple_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "role")
     private List<String> roles;
 
@@ -52,12 +61,38 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        if (roles == null) {
-            return List.of(new SimpleGrantedAuthority("ROLE_USER"));
+        List<GrantedAuthority> authorities = new java.util.ArrayList<>();
+
+        // 添加简单角色权限（向后兼容）
+        if (roles != null && !roles.isEmpty()) {
+            roles.stream()
+                    .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
+                    .forEach(authorities::add);
         }
-        return roles.stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
-                .toList();
+
+        // 添加基于RBAC的权限
+        if (userRoles != null && !userRoles.isEmpty()) {
+            // 添加角色权限
+            userRoles.stream()
+                    .filter(ur -> ur.getEnabled() && ur.getRole().getEnabled())
+                    .map(ur -> new SimpleGrantedAuthority("ROLE_" + ur.getRole().getName()))
+                    .forEach(authorities::add);
+
+            // 添加具体权限
+            userRoles.stream()
+                    .filter(ur -> ur.getEnabled() && ur.getRole().getEnabled())
+                    .flatMap(ur -> ur.getRole().getPermissions().stream())
+                    .filter(Permission::getEnabled)
+                    .map(permission -> new SimpleGrantedAuthority(permission.getCode()))
+                    .forEach(authorities::add);
+        }
+
+        // 确保至少有一个基础角色
+        if (authorities.isEmpty()) {
+            authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+        }
+
+        return authorities;
     }
 
     @Override
@@ -78,5 +113,18 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return enabled;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return id != null && id.equals(user.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
     }
 }

@@ -1,45 +1,230 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Login</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 - RBAC 权限管理系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            max-width: 900px;
+            width: 100%;
+        }
+        .login-left {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 3rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .login-right {
+            padding: 3rem;
+        }
+        .brand-title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+        .brand-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+        }
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        .feature-list li {
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+        }
+        .feature-list i {
+            margin-right: 1rem;
+            font-size: 1.2rem;
+        }
+        .form-floating {
+            margin-bottom: 1.5rem;
+        }
+        .btn-login {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 1rem;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .demo-info {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 2rem;
+        }
+        .demo-info h6 {
+            margin-bottom: 0.5rem;
+        }
+        .demo-info p {
+            margin-bottom: 0.25rem;
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+    </style>
 </head>
 <body>
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h3>Login</h3>
-                </div>
-                <div class="card-body">
-                    <form th:action="@{/login/process}" method="post">
-                        <div th:if="${param.error}" class="alert alert-danger">
-                            Invalid username or password.
-                        </div>
-                        <div th:if="${param.logout}" class="alert alert-success">
-                            You have been logged out.
-                        </div>
-                        <div class="mb-3">
-                            <label for="username" class="form-label">Username</label>
-                            <input type="text" id="username" name="username" class="form-control" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Password</label>
-                            <input type="password" id="password" name="password" class="form-control" required>
-                        </div>
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary">Login</button>
-                        </div>
-                    </form>
-                    <div class="mt-3">
-                        <p>Don't have an account? <a th:href="@{/register}">Register here</a></p>
+    <div class="container">
+        <div class="login-container">
+            <div class="row g-0">
+                <!-- 左侧信息 -->
+                <div class="col-md-5 login-left">
+                    <div class="brand-title">
+                        <i class="bi bi-shield-lock me-2"></i>
+                        RBAC 系统
+                    </div>
+                    <div class="brand-subtitle">
+                        企业级权限管理测试平台
+                    </div>
+                    <ul class="feature-list">
+                        <li>
+                            <i class="bi bi-check-circle-fill"></i>
+                            基于角色的访问控制
+                        </li>
+                        <li>
+                            <i class="bi bi-check-circle-fill"></i>
+                            动态权限分配
+                        </li>
+                        <li>
+                            <i class="bi bi-check-circle-fill"></i>
+                            方法级权限控制
+                        </li>
+                        <li>
+                            <i class="bi bi-check-circle-fill"></i>
+                            实时权限验证
+                        </li>
+                    </ul>
+                    <div class="demo-info">
+                        <h6><i class="bi bi-info-circle me-2"></i>演示账号</h6>
+                        <p><strong>用户名:</strong> admin</p>
+                        <p><strong>密码:</strong> admin123</p>
                     </div>
                 </div>
+
+                <!-- 右侧登录表单 -->
+                <div class="col-md-7 login-right">
+                    <div class="text-center mb-4">
+                        <h3>欢迎登录</h3>
+                        <p class="text-muted">请输入您的账号信息</p>
+                    </div>
+
+                    <form th:action="@{/login/process}" method="post">
+                        <!-- 错误提示 -->
+                        <div th:if="${param.error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            用户名或密码错误
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+
+                        <!-- 登出提示 -->
+                        <div th:if="${param.logout}" class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="bi bi-check-circle me-2"></i>
+                            您已成功登出
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+
+                        <!-- 登录提示 -->
+                        <div class="alert alert-info alert-dismissible fade show" role="alert">
+                            <i class="bi bi-info-circle me-2"></i>
+                            请使用演示账号登录体验 RBAC 权限管理系统
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+
+                        <!-- 用户名 -->
+                        <div class="form-floating">
+                            <input type="text" class="form-control" id="username" name="username" placeholder="请输入用户名" required>
+                            <label for="username">
+                                <i class="bi bi-person me-2"></i>
+                                用户名
+                            </label>
+                        </div>
+
+                        <!-- 密码 -->
+                        <div class="form-floating">
+                            <input type="password" class="form-control" id="password" name="password" placeholder="请输入密码" required>
+                            <label for="password">
+                                <i class="bi bi-lock me-2"></i>
+                                密码
+                            </label>
+                        </div>
+
+                        <!-- 记住我 -->
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="remember-me" name="remember-me">
+                            <label class="form-check-label" for="remember-me">
+                                记住我
+                            </label>
+                        </div>
+
+                        <!-- 登录按钮 -->
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg btn-login">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>
+                                登录系统
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- 系统信息 -->
+                    <div class="text-center mt-4">
+                        <p class="text-muted small">
+                            <i class="bi bi-shield-check me-1"></i>
+                            企业级 RBAC 权限管理系统演示
+                        </p>
+                    </div>
+
+                  </div>
             </div>
         </div>
     </div>
-</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 自动填充演示账号
+        document.addEventListener('DOMContentLoaded', function() {
+            // 自动填充演示账号
+            document.getElementById('username').value = 'admin';
+            document.getElementById('password').value = 'admin123';
+
+            // 聚焦到用户名输入框
+            document.getElementById('username').focus();
+        });
+
+        // 表单提交验证
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+
+            if (!username || !password) {
+                e.preventDefault();
+                alert('请输入用户名和密码');
+                return;
+            }
+        });
+    </script>
 </body>
 </html>

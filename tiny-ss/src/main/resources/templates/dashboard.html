@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RBAC 权限管理仪表板</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background-color: #212529;
+        }
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            padding: 0.75rem 1rem;
+        }
+        .sidebar .nav-link:hover {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .sidebar .nav-link.active {
+            color: white;
+            background-color: #0d6efd;
+        }
+        .main-content {
+            min-height: 100vh;
+            background-color: #f8f9fa;
+        }
+        .permission-badge {
+            font-size: 0.75rem;
+            margin: 0.25rem;
+        }
+        .card-stats {
+            border-left: 4px solid #0d6efd;
+        }
+        .card-menu {
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+        .card-menu:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .access-denied {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .access-denied .card-menu {
+            transform: none;
+            box-shadow: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- 侧边栏 -->
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <div class="text-center mb-4">
+                        <h4 class="text-white">RBAC 系统</h4>
+                        <p class="text-muted small">权限管理测试平台</p>
+                    </div>
+
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#dashboard" data-section="dashboard">
+                                <i class="bi bi-speedometer2 me-2"></i>
+                                仪表板
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#user-management" data-section="user-management">
+                                <i class="bi bi-people me-2"></i>
+                                用户管理
+                                <span class="badge bg-warning ms-auto" sec:authorize="hasAuthority('user:create')">+</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#order-management" data-section="order-management">
+                                <i class="bi bi-cart3 me-2"></i>
+                                订单管理
+                                <span class="badge bg-info ms-auto" sec:authorize="hasAuthority('order:create')">+</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#role-management" data-section="role-management">
+                                <i class="bi bi-shield-lock me-2"></i>
+                                角色管理
+                                <span class="badge bg-success ms-auto" sec:authorize="hasAuthority('role:create')">+</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#permission-management" data-section="permission-management">
+                                <i class="bi bi-key me-2"></i>
+                                权限管理
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#system-management" data-section="system-management">
+                                <i class="bi bi-gear me-2"></i>
+                                系统管理
+                            </a>
+                        </li>
+                    </ul>
+
+                    <hr class="text-muted">
+
+                    <div class="user-info text-white p-3">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-person-circle fs-4 me-2"></i>
+                            <div>
+                                <div class="fw-bold" th:text="${username}">管理员</div>
+                                <div class="small text-muted" sec:authorize="hasAuthority('ROLE_ADMIN')">系统管理员</div>
+                                <div class="small text-muted" sec:authorize="hasAuthority('ROLE_USER_MANAGER')">用户管理员</div>
+                                <div class="small text-muted" sec:authorize="hasAuthority('ROLE_ORDER_MANAGER')">订单管理员</div>
+                                <div class="small text-muted" sec:authorize="!hasAuthority('ROLE_ADMIN') and !hasAuthority('ROLE_USER_MANAGER') and !hasAuthority('ROLE_ORDER_MANAGER')">普通用户</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- 主内容区 -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                <!-- 顶部导航栏 -->
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2" id="page-title">仪表板</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group me-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="refreshCurrentSection()">
+                                <i class="bi bi-arrow-clockwise"></i> 刷新
+                            </button>
+                        </div>
+                        <div class="btn-group">
+                            <a href="/logout" class="btn btn-sm btn-outline-danger">
+                                <i class="bi bi-box-arrow-right"></i> 退出
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 仪表板内容 -->
+                <div id="dashboard-content" class="content-section">
+                    <div class="row mb-4">
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card card-stats">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col">
+                                            <h5 class="card-title text-uppercase text-muted mb-0">总权限数</h5>
+                                            <span class="h2 font-weight-bold mb-0">14</span>
+                                        </div>
+                                        <div class="col-auto">
+                                            <div class="icon icon-shape bg-danger text-white rounded-circle shadow">
+                                                <i class="bi bi-key"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card card-stats">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col">
+                                            <h5 class="card-title text-uppercase text-muted mb-0">角色数</h5>
+                                            <span class="h2 font-weight-bold mb-0">4</span>
+                                        </div>
+                                        <div class="col-auto">
+                                            <div class="icon icon-shape bg-warning text-white rounded-circle shadow">
+                                                <i class="bi bi-shield-lock"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card card-stats">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col">
+                                            <h5 class="card-title text-uppercase text-muted mb-0">用户数</h5>
+                                            <span class="h2 font-weight-bold mb-0">1</span>
+                                        </div>
+                                        <div class="col-auto">
+                                            <div class="icon icon-shape bg-info text-white rounded-circle shadow">
+                                                <i class="bi bi-people"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card card-stats">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col">
+                                            <h5 class="card-title text-uppercase text-muted mb-0">我的权限</h5>
+                                            <span class="h2 font-weight-bold mb-0" id="permission-count">0</span>
+                                        </div>
+                                        <div class="col-auto">
+                                            <div class="icon icon-shape bg-success text-white rounded-circle shadow">
+                                                <i class="bi bi-check-circle"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 权限信息 -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="card-title mb-0">
+                                        <i class="bi bi-person-badge me-2"></i>
+                                        当前用户权限
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div id="user-permissions">
+                                        <span class="badge bg-primary permission-badge" th:each="authority : ${authorities}" th:text="${authority.authority}">ROLE_ADMIN</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="card-title mb-0">
+                                        <i class="bi bi-info-circle me-2"></i>
+                                        快速访问
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-grid gap-2">
+                                        <button class="btn btn-outline-primary" onclick="testPermission('user:read')">
+                                            测试用户查看权限
+                                        </button>
+                                        <button class="btn btn-outline-success" onclick="testPermission('user:create')">
+                                            测试用户创建权限
+                                        </button>
+                                        <button class="btn btn-outline-info" onclick="testPermission('system:config')">
+                                            测试系统配置权限
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 用户管理内容 -->
+                <div id="user-management-content" class="content-section" style="display: none;">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-people me-2"></i>
+                                用户管理
+                            </h5>
+                            <button class="btn btn-primary" sec:authorize="hasAuthority('user:create')" onclick="showCreateUser()">
+                                <i class="bi bi-plus-circle me-1"></i>
+                                创建用户
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-info" sec:authorize="hasAuthority('user:read')">
+                                <i class="bi bi-check-circle me-2"></i>
+                                您有用户查看权限
+                            </div>
+                            <div class="alert alert-warning" sec:authorize="!hasAuthority('user:read')">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                您没有用户查看权限
+                            </div>
+
+                            <div class="table-responsive" sec:authorize="hasAuthority('user:read')">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>用户名</th>
+                                            <th>邮箱</th>
+                                            <th>角色</th>
+                                            <th>状态</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>1</td>
+                                            <td>admin</td>
+                                            <td>admin@example.com</td>
+                                            <td><span class="badge bg-danger">ADMIN</span></td>
+                                            <td><span class="badge bg-success">启用</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary" sec:authorize="hasAuthority('user:update')">编辑</button>
+                                                <button class="btn btn-sm btn-outline-danger" sec:authorize="hasAuthority('user:delete')">删除</button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 其他模块内容占位符 -->
+                <div id="order-management-content" class="content-section" style="display: none;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-cart3 me-2"></i>
+                                订单管理
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-info" sec:authorize="hasAuthority('order:read')">
+                                <i class="bi bi-check-circle me-2"></i>
+                                您有订单查看权限
+                            </div>
+                            <div class="alert alert-warning" sec:authorize="!hasAuthority('order:read')">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                您没有订单查看权限
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="role-management-content" class="content-section" style="display: none;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-shield-lock me-2"></i>
+                                角色管理
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-info" sec:authorize="hasAuthority('role:read')">
+                                <i class="bi bi-check-circle me-2"></i>
+                                您有角色查看权限
+                            </div>
+                            <div class="alert alert-warning" sec:authorize="!hasAuthority('role:read')">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                您没有角色查看权限
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="permission-management-content" class="content-section" style="display: none;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-key me-2"></i>
+                                权限管理
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-info" sec:authorize="hasAuthority('permission:read')">
+                                <i class="bi bi-check-circle me-2"></i>
+                                您有权限查看权限
+                            </div>
+                            <div class="alert alert-warning" sec:authorize="!hasAuthority('permission:read')">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                您没有权限查看权限
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="system-management-content" class="content-section" style="display: none;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-gear me-2"></i>
+                                系统管理
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-info" sec:authorize="hasAuthority('system:config')">
+                                <i class="bi bi-check-circle me-2"></i>
+                                您有系统配置权限
+                            </div>
+                            <div class="alert alert-warning" sec:authorize="!hasAuthority('system:config')">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                您没有系统配置权限
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- 权限测试结果模态框 -->
+    <div class="modal fade" id="permissionTestModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">权限测试结果</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="permissionTestResult">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            updatePermissionCount();
+            setupNavigation();
+        });
+
+        // 更新权限数量
+        function updatePermissionCount() {
+            const permissions = document.querySelectorAll('#user-permissions .badge');
+            document.getElementById('permission-count').textContent = permissions.length;
+        }
+
+        // 设置导航
+        function setupNavigation() {
+            const navLinks = document.querySelectorAll('.nav-link[data-section]');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const section = this.getAttribute('data-section');
+                    showSection(section);
+
+                    // 更新活动状态
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+
+                    // 更新页面标题
+                    const titles = {
+                        'dashboard': '仪表板',
+                        'user-management': '用户管理',
+                        'order-management': '订单管理',
+                        'role-management': '角色管理',
+                        'permission-management': '权限管理',
+                        'system-management': '系统管理'
+                    };
+                    document.getElementById('page-title').textContent = titles[section] || '仪表板';
+                });
+            });
+        }
+
+        // 显示指定部分
+        function showSection(sectionName) {
+            const sections = document.querySelectorAll('.content-section');
+            sections.forEach(section => section.style.display = 'none');
+
+            const targetSection = document.getElementById(sectionName + '-content');
+            if (targetSection) {
+                targetSection.style.display = 'block';
+            }
+        }
+
+        // 刷新当前部分
+        function refreshCurrentSection() {
+            const activeLink = document.querySelector('.nav-link.active');
+            if (activeLink) {
+                const section = activeLink.getAttribute('data-section');
+                showSection(section);
+            }
+        }
+
+        // 测试权限
+        function testPermission(permission) {
+            fetch(`/rbac-test/api/check-permission/${permission}`)
+                .then(response => response.json())
+                .then(data => {
+                    const hasPermission = data.hasPermission;
+                    const alertClass = hasPermission ? 'alert-success' : 'alert-danger';
+                    const icon = hasPermission ? 'check-circle' : 'x-circle';
+
+                    document.getElementById('permissionTestResult').innerHTML = `
+                        <div class="alert ${alertClass}">
+                            <h6><i class="bi bi-${icon} me-2"></i>权限测试结果</h6>
+                            <p><strong>权限:</strong> ${data.permission}</p>
+                            <p><strong>结果:</strong> ${hasPermission ? '✅ 有权限' : '❌ 无权限'}</p>
+                            <p><strong>用户权限总数:</strong> ${data.authorities.length}</p>
+                        </div>
+                    `;
+
+                    new bootstrap.Modal(document.getElementById('permissionTestModal')).show();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('permissionTestResult').innerHTML = `
+                        <div class="alert alert-danger">
+                            <h6><i class="bi bi-x-circle me-2"></i>测试失败</h6>
+                            <p>权限测试时发生网络错误</p>
+                        </div>
+                    `;
+                    new bootstrap.Modal(document.getElementById('permissionTestModal')).show();
+                });
+        }
+
+        // 显示创建用户界面
+        function showCreateUser() {
+            window.location.href = '/rbac-test/users/create';
+        }
+    </script>
+</body>
+</html>
