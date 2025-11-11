@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>欢迎页面 - Spring Security学习</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding-top: 60px;
+        }
+        .navbar {
+            background: white !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .welcome-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        .welcome-icon {
+            font-size: 4rem;
+            color: #667eea;
+            margin-bottom: 1.5rem;
+        }
+        .feature-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            padding: 2rem;
+            height: 100%;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: none;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        .btn-feature {
+            border-radius: 8px;
+            padding: 0.5rem 1.5rem;
+            font-weight: 500;
+        }
+        .user-info {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-shield-lock me-2"></i>
+                Spring Security 学习
+            </a>
+            <div class="navbar-nav ms-auto">
+                <div class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-person-circle me-1"></i>
+                        <span sec:authentication="name">用户</span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>个人资料</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" th:href="@{/logout}"><i class="bi bi-box-arrow-right me-2"></i>退出登录</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要内容 -->
+    <div class="container" style="margin-top: 80px;">
+        <!-- 用户信息卡片 -->
+        <div class="user-info">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h4 class="mb-2">
+                        <i class="bi bi-emoji-smile me-2"></i>
+                        欢迎回来，<span sec:authentication="name">用户</span>！
+                    </h4>
+                    <p class="mb-1">
+                        <strong>用户角色:</strong>
+                        <span sec:authorize="hasRole('ADMIN')">
+                            <span class="badge bg-warning text-dark">管理员</span>
+                        </span>
+                        <span sec:authorize="hasRole('USER')">
+                            <span class="badge bg-info">普通用户</span>
+                        </span>
+                    </p>
+                    <p class="mb-0">
+                        <strong>登录时间:</strong>
+                        <span th:text="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd HH:mm:ss')}"></span>
+                    </p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <a th:href="@{/logout}" class="btn btn-light">
+                        <i class="bi bi-box-arrow-right me-2"></i>
+                        安全退出
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 欢迎信息 -->
+        <div class="welcome-card">
+            <i class="bi bi-shield-check welcome-icon"></i>
+            <h2 class="mb-3">Spring Security 学习平台</h2>
+            <p class="text-muted lead">
+                第一阶段：夯实基础 —— 单体应用内的 Spring Security 精通
+            </p>
+            <p class="text-muted">
+                深入理解 Spring Security 核心工作原理，掌握认证、授权、密码编码等企业级安全解决方案
+            </p>
+        </div>
+
+        <!-- 功能模块 -->
+        <div class="row">
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card feature-card">
+                    <div class="feature-icon text-primary">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+                    <h5 class="card-title">用户管理</h5>
+                    <p class="card-text text-muted">
+                        管理系统中的用户账户，包括用户创建、角色分配、权限设置等功能。
+                    </p>
+                    <a href="/rbac-test/users" class="btn btn-primary btn-feature">
+                        <i class="bi bi-arrow-right me-2"></i>
+                        进入管理
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card feature-card">
+                    <div class="feature-icon text-success">
+                        <i class="bi bi-shield-fill-check"></i>
+                    </div>
+                    <h5 class="card-title">权限测试</h5>
+                    <p class="card-text text-muted">
+                        测试基于角色的访问控制(RBAC)功能，验证权限配置是否正确生效。
+                    </p>
+                    <a href="/rbac-test/simple" class="btn btn-success btn-feature">
+                        <i class="bi bi-arrow-right me-2"></i>
+                        开始测试
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card feature-card">
+                    <div class="feature-icon text-warning">
+                        <i class="bi bi-graph-up"></i>
+                    </div>
+                    <h5 class="card-title">控制台</h5>
+                    <p class="card-text text-muted">
+                        查看系统运行状态，监控用户活动，管理安全配置等操作。
+                    </p>
+                    <a href="/rbac-test" class="btn btn-warning btn-feature">
+                        <i class="bi bi-arrow-right me-2"></i>
+                        进入控制台
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 学习进度 -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">
+                            <i class="bi bi-book me-2"></i>
+                            学习进度跟踪
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="text-success">✅ 已完成</h6>
+                                <ul class="list-unstyled">
+                                    <li><i class="bi bi-check-circle me-2"></i>Spring Security 基础配置</li>
+                                    <li><i class="bi bi-check-circle me-2"></i>用户认证机制</li>
+                                    <li><i class="bi bi-check-circle me-2"></i>基于角色的授权</li>
+                                    <li><i class="bi bi-check-circle me-2"></i>Thymeleaf 模板集成</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-warning">🚧 进行中</h6>
+                                <ul class="list-unstyled">
+                                    <li><i class="bi bi-clock me-2"></i>方法级权限控制</li>
+                                    <li><i class="bi bi-clock me-2"></i>自定义权限评估器</li>
+                                    <li><i class="bi bi-clock me-2"></i>CSRF 防护机制</li>
+                                    <li><i class="bi bi-clock me-2"></i>记住我功能</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

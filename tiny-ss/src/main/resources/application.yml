@@ -15,6 +15,9 @@ spring:
       path: /h2-console
   thymeleaf:
     cache: false
+  output:
+    ansi:
+      enabled: ALWAYS
 
 logging:
   level:

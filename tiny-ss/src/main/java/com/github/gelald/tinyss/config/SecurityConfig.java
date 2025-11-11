@@ -66,7 +66,7 @@ public class SecurityConfig {
                 formLogin
                     .loginPage("/login")
                     .loginProcessingUrl("/login/process")
-                    .defaultSuccessUrl("/rbac-test", true)
+                    .defaultSuccessUrl("/", true)
                     .failureUrl("/login?error=true")
                     .usernameParameter("username")
                     .passwordParameter("password")
