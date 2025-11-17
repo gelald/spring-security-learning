@@ -13,6 +13,9 @@
         <module>oauth2-microservice</module>
         <module>tiny-ss</module>
         <module>tiny-oauth2</module>
+        <module>tiny-security</module>
+        <module>tiny-oauth2-client</module>
+        <module>tiny-oauth2-server</module>
     </modules>
 
     <properties>
