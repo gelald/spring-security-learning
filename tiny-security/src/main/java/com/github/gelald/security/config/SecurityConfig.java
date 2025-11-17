@@ -13,7 +13,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.RememberMeServices;
+import org.springframework.security.web.authentication.logout.HeaderWriterLogoutHandler;
+import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.authentication.rememberme.TokenBasedRememberMeServices;
+import org.springframework.security.web.header.writers.ClearSiteDataHeaderWriter;
 
 @Slf4j
 @Configuration
@@ -62,6 +65,12 @@ public class SecurityConfig {
                         // 指定logout成功后的跳转路径
                         // 这里permitAll是为了直接放行，不需要在authorizeHttpRequests中另外配置
                         .logoutSuccessUrl("/logout/success").permitAll()
+                        // 如果不做重定向，也可以配置只返回一个状态码，不过一般都会用重定向的方式
+                        //.logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler())
+                        // 可以设置logout时删除哪些cookies
+                        //.deleteCookies("remember-me")
+                        // 可以设置logout时清除网站数据，比如cookies、storage等
+                        //.addLogoutHandler(new HeaderWriterLogoutHandler(new ClearSiteDataHeaderWriter(ClearSiteDataHeaderWriter.Directive.COOKIES)))
                 )
                 // ********** Logout **********
         ;
