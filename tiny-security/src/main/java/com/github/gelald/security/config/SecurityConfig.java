@@ -54,6 +54,16 @@ public class SecurityConfig {
                 .rememberMe(rememberMe -> rememberMe
                         .rememberMeServices(customRememberMeService(customUserDetailsService())))
                 // ********** Remember me **********
+
+                // ********** Logout **********
+                // 默认注销的实现
+                //.logout(Customizer.withDefaults())
+                .logout(logout -> logout
+                        // 指定logout成功后的跳转路径
+                        // 这里permitAll是为了直接放行，不需要在authorizeHttpRequests中另外配置
+                        .logoutSuccessUrl("/logout/success").permitAll()
+                )
+                // ********** Logout **********
         ;
 
         // @formatter:on

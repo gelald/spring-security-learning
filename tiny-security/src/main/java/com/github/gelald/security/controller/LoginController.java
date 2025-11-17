@@ -59,4 +59,9 @@ public class LoginController {
         }
         return "home";
     }
+
+    @GetMapping("/logout/success")
+    public String logoutSuccess() {
+        return "logout-success";
+    }
 }
