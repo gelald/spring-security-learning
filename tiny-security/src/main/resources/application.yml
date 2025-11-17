@@ -1,0 +1,9 @@
+server:
+  port: 19503
+
+spring:
+  thymeleaf:
+    cache: false
+  output:
+    ansi:
+      enabled: ALWAYS
