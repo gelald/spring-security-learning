@@ -12,6 +12,8 @@ import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.RememberMeServices;
+import org.springframework.security.web.authentication.rememberme.TokenBasedRememberMeServices;
 
 @Slf4j
 @Configuration
@@ -19,6 +21,7 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        // @formatter:off
         http
                 .csrf(Customizer.withDefaults())
 
@@ -32,17 +35,22 @@ public class SecurityConfig {
                 //.formLogin(Customizer.withDefaults())
                 // 访问自定义的login page，先访问到/login的Controller方法，再由Controller解析login.html页面
                 .formLogin(form -> form
-                        .loginPage("/login")
+                        .loginPage("/login").defaultSuccessUrl("/home")
                         .permitAll())
-        // ********** 表单登录 **********
+                // ********** 表单登录 **********
 
-        // ********** Http Basic **********
-        //.httpBasic(Customizer.withDefaults())
-        // ********** Http Basic **********
+                // ********** Http Basic **********
+                //.httpBasic(Customizer.withDefaults())
+                // ********** Http Basic **********
 
-
+                // ********** Remember me **********
+                // 实现记住我功能
+                .rememberMe(rememberMe -> rememberMe
+                        .rememberMeServices(customRememberMeService(customUserDetailsService())))
+                // ********** Remember me **********
         ;
 
+        // @formatter:on
         return http.build();
     }
 
@@ -58,7 +66,7 @@ public class SecurityConfig {
      * 里面的逻辑可以根据我们自己的Dao层的结构来实现
      */
     @Bean
-    public UserDetailsService initUsers() {
+    public UserDetailsService customUserDetailsService() {
         PasswordEncoder passwordEncoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
         UserDetails admin = User.builder()
                 .username("admin")
@@ -71,5 +79,14 @@ public class SecurityConfig {
                 .roles("USER")
                 .build();
         return new InMemoryUserDetailsManager(admin, user);
+    }
+
+    @Bean
+    public RememberMeServices customRememberMeService(UserDetailsService userDetailsService) {
+        // 使用基于哈希令牌的处理方法，使用 SHA-256 算法给令牌生成签名、验证签名
+        TokenBasedRememberMeServices.RememberMeTokenAlgorithm encodingAlgorithm = TokenBasedRememberMeServices.RememberMeTokenAlgorithm.SHA256;
+        TokenBasedRememberMeServices rememberMe = new TokenBasedRememberMeServices("custom-remember-me", userDetailsService, encodingAlgorithm);
+        rememberMe.setMatchingAlgorithm(TokenBasedRememberMeServices.RememberMeTokenAlgorithm.SHA256);
+        return rememberMe;
     }
 }
