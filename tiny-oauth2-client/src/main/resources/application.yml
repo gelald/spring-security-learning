@@ -1,0 +1,25 @@
+server:
+  port: 19504
+
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          github:
+            client-id: Ov23lizMWxiP14Df69aE
+            client-secret: eff4dd999426207ee9093d32009ee86532fd38cb
+            scope: read:user
+            # 回调地址，baseUrl 会解析成 server.address:server:port，registrationId 会解析成 registration 名
+            # 授权码回调时也用这个地址
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            client-name: GitHub
+            provider: github
+        provider:
+          github:
+            # 获取授权码路径
+            authorization-uri: https://github.com/login/oauth/authorize
+            # 根据授权码获取token的地址
+            token-uri: https://github.com/login/oauth/access_token
+            user-info-uri: https://api.github.com/user
+            user-name-attribute: login
