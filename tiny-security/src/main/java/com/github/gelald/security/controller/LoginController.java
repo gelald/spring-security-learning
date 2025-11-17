@@ -14,6 +14,26 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @Slf4j
 @Controller
 public class LoginController {
+    @GetMapping("/")
+    public String index(Model model) {
+        SecurityContext securityContext = SecurityContextHolder.getContext();
+        Authentication authentication = securityContext.getAuthentication();
+        if (authentication.isAuthenticated()) {
+            Object principal = authentication.getPrincipal();
+            if (principal instanceof UserDetails userDetails) {
+                model.addAttribute("name", userDetails.getUsername());
+                log.info("已登录，欢迎 {} 进入", userDetails.getUsername());
+            } else {
+                model.addAttribute("name", "null");
+                log.info("已登录，欢迎进入");
+            }
+            return "home";
+        } else {
+            log.info("未登录，跳转登录页");
+            return "login";
+        }
+    }
+
     @GetMapping("/login")
     public String login() {
         return "login";
