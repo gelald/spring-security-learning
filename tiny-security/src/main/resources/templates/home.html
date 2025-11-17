@@ -5,6 +5,12 @@
 </head>
 <body>
 <h1>Hello, <span th:text="${name}"></span>!</h1>
-<a href="/logout">Logout</a>
+
+<!-- 使用 POST 表单提交登出请求 -->
+<form th:action="@{/logout}" method="post">
+    <input type="submit" value="Logout"/>
+    <!-- CSRF 令牌会自动由 Thymeleaf 添加 -->
+</form>
+
 </body>
 </html>
