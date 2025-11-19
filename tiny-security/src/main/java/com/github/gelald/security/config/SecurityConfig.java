@@ -1,5 +1,6 @@
 package com.github.gelald.security.config;
 
+import jakarta.servlet.DispatcherType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,6 +30,9 @@ public class SecurityConfig {
                 .csrf(Customizer.withDefaults())
 
                 .authorizeHttpRequests(auth -> auth
+                        // 对于Controller中转发Thymeleaf渲染的模板进行放行
+                        // 对于Controller中抛出的异常进行放行
+                        .dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR).permitAll()
                         .requestMatchers("/public/**", "/resource/**").permitAll()
                         .anyRequest().authenticated())
 
