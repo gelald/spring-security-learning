@@ -38,9 +38,13 @@ public class SecurityConfig {
                 // ********** Http Basic Login **********
 
                 // ********** Form Login **********
-                // 使用默认的实现可能会出现无法访问bootstrap资源的问题
-                // https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css
-                //.formLogin(Customizer.withDefaults())
+                // login 流程重点关注：UsernamePasswordAuthenticationFilter
+                // 1. 调用AuthenticationManager的authenticate方法，实际调用的实现类是ProviderManager
+                // 2. ProviderManager维护了一个AuthenticationProvider的集合，会遍历它们去尝试每一个AuthenticationProvider
+                // 3. 只有AuthenticationProvider的supports方法返回true，才能进行进一步的认证工作
+                // 4. 最终DaoAuthenticationProvider满足要求，它会调用UserDetailsService来调用loadUserByUsername
+                // 5. 找到User后会执行其他校验，比如账号状态等，还会执行密码的校验，所有校验都通过后会构建UsernamePasswordAuthenticationToken返回
+                // 6. 最终UsernamePasswordAuthenticationFilter拿到认证结果后会构建SecurityContext并存入SecurityContextHolder，还会设置HTTP Session
                 .formLogin(form -> form
                         // 访问自定义的login page，先访问到/login的Controller方法，再由Controller解析login.html页面
                         .loginPage("/login")
@@ -50,17 +54,28 @@ public class SecurityConfig {
                         // alwaysUse = false或缺省，用户直接访问/admin -> 被拦截跳转到/login -> 登录成功后依然跳转/admin
                         .defaultSuccessUrl("/home", false).permitAll()
                 )
+                //.formLogin(Customizer.withDefaults())
                 // ********** Form Login **********
 
                 // ********** Remember me **********
-                // 实现记住我功能
+                // 实现记住我功能重点关注：RememberMeAuthenticationFilter
+                // 1. 如果发现SecurityContextHolder中的Authentication是null，那么才尝试进行RememberMe的autoLogin
+                // 2. 获取remember-me cookie，从cookie中获取username，调用UserDetailsService来调用loadUserByUsername
+                // 3. 根据预定义的RememberMe的生成、校验签名算法来生成签名，只有签名和cookie上的签名一致，才算通过autoLogin
+                // 4. 最终构建出来一个RememberMeAuthenticationToken
+                // 5. 后续流程和login流程类似
                 .rememberMe(rememberMe -> rememberMe
                         .rememberMeServices(customRememberMeService(customUserDetailsService())))
+                //.rememberMe(Customizer.withDefaults())
                 // ********** Remember me **********
 
                 // ********** Logout **********
-                // 默认注销的实现
-                //.logout(Customizer.withDefaults())
+                // logout 流程重点关注：LogoutFilter
+                // 1. 从SecurityContextHolder中获取Authentication
+                // 2. CompositeLogoutHandler维护了一系列LogoutHandler的实现类，会拿着这个Authentication执行logout的逻辑
+                // 3. 其中重点关注两个LogoutHandler：CookieClearingLogoutHandler，如果logout逻辑中自定义了删除cookie的逻辑，会走这个handler
+                // 另外一个LogoutHandler：SecurityContextLogoutHandler，核心工作：session.invalidate()、securityContextHolderStrategy.clearContext()
+                // 让session失效，并清除SecurityContext
                 .logout(logout -> logout
                         // 指定logout成功后的跳转路径
                         // 这里permitAll是为了直接放行，不需要在authorizeHttpRequests中另外配置
@@ -72,6 +87,7 @@ public class SecurityConfig {
                         // 可以设置logout时清除网站数据，比如cookies、storage等
                         //.addLogoutHandler(new HeaderWriterLogoutHandler(new ClearSiteDataHeaderWriter(ClearSiteDataHeaderWriter.Directive.COOKIES)))
                 )
+                //.logout(Customizer.withDefaults())
                 // ********** Logout **********
         ;
 
