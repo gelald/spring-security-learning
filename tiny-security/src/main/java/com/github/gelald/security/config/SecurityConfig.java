@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -21,6 +22,9 @@ import org.springframework.security.web.header.writers.ClearSiteDataHeaderWriter
 
 @Slf4j
 @Configuration
+// 这个注解可以不写，因为SpringBoot做了自动配置，只要classpath下引入 spring-boot-starter-security，SpringBoot就会自动尝试配置安全相关组件
+// 显式信号，表明这个配置类是和安全相关的
+@EnableWebSecurity
 public class SecurityConfig {
 
     @Bean
